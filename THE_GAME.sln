@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.10.35122.118
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "THE_GAME", "THE_GAME\THE_GAME.csproj", "{C81B8191-3795-4EA7-806C-FF238D4EF0D2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AnalyzerMain", "THE_GAME\AnalyzerMain.csproj", "{C81B8191-3795-4EA7-806C-FF238D4EF0D2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "The_Maze", "The_Maze\The_Maze.csproj", "{32735734-7F08-4275-8CD5-048E16D1EA3D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{C81B8191-3795-4EA7-806C-FF238D4EF0D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C81B8191-3795-4EA7-806C-FF238D4EF0D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C81B8191-3795-4EA7-806C-FF238D4EF0D2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{32735734-7F08-4275-8CD5-048E16D1EA3D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{32735734-7F08-4275-8CD5-048E16D1EA3D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{32735734-7F08-4275-8CD5-048E16D1EA3D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{32735734-7F08-4275-8CD5-048E16D1EA3D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
