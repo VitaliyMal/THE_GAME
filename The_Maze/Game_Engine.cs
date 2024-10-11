@@ -1,8 +1,8 @@
-﻿using System.Text;
-using Towel.DataStructures;
-//#define MazeGenertorLoop // uncomment to run the generator in a loop
+﻿//#define MazeGenertorLoop // uncomment to run the generator in a loop
 //#define DebugRandomMazeGeneration // uncomment me to watch the maze being built node-by-node
-//#define UsePrims // uncomment me to use an alternate algorithm for maze generation
+#define UsePrims // uncomment me to use an alternate algorithm for maze generation
+using System.Text;
+using Towel.DataStructures;
 
 
 
@@ -40,6 +40,7 @@ namespace The_Maze
 #else
             Console.CursorVisible = true;
             Maze.Tile[,] maze = GenerateMaze();
+           
             Console.Clear();
             Console.WriteLine(Maze.Render(maze));
             Console.WriteLine();
@@ -51,7 +52,7 @@ namespace The_Maze
             Console.WriteLine("Выберите стратегию для ИИ:");
             Console.WriteLine("1. Двигаться вдоль правой стенки");
             Console.WriteLine("2. Двигаться вдоль левой стенки");
-            Console.WriteLine("3. Случайный выбор на развилках");
+            Console.WriteLine("3. Умный выбор на развилках");
 
             int choice;
             while (!int.TryParse(Console.ReadLine(), out choice) || choice < 1 || choice > 3)
