@@ -40,13 +40,26 @@ namespace The_Maze
 #else
             Console.CursorVisible = true;
             Maze.Tile[,] maze = GenerateMaze();
-           
+
             Console.Clear();
             Console.WriteLine(Maze.Render(maze));
             Console.WriteLine();
             Console.WriteLine("Maze");
             Console.WriteLine("Solve the maze by using the arrow keys.");
             Console.WriteLine("Press escape to quit.");
+
+            // Вызов BFS и получение количества шагов до конечной точки
+            BFS bfs = new BFS(maze);
+            var (path, steps) = bfs.FindShortestPath((0, 0), (rows - 1, columns - 1));
+
+            if (steps != -1)
+            {
+                Console.WriteLine($"Кратчайшее количество ходов до конечной точки: {steps}");
+            }
+            else
+            {
+                Console.WriteLine("Нет доступного пути до конечной точки.");
+            }
 
             // Выбор стратегии ИИ
             Console.WriteLine("Выберите стратегию для ИИ:");
