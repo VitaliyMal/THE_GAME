@@ -7,6 +7,7 @@
         private int column;
         private readonly HashSet<(int, int)> visitedLocations; // Хранит все посещённые клетки
         private readonly Stack<(int row, int column, List<Direction> availableDirections)> pathStack;
+        private int moveCount; // Счетчик количества ходов
 
         public enum Strategy
         {
@@ -35,6 +36,7 @@
             pathStack = new Stack<(int, int, List<Direction>)>();
             visitedLocations.Add((row, column)); // Добавляем начальную позицию в посещённые
             pathStack.Push((row, column, GetAvailableDirections()));
+            moveCount = 0; // Инициализация счетчика
         }
 
         public void Move()
@@ -113,7 +115,7 @@
                 {
                     (row, column, List<Direction> lastAvailableDirections) = pathStack.Pop();
 
-                    // Получаем непосещенные направления снова
+                    // Получаем непосещённые направления снова
                     List<Direction> lastUnvisitedDirections = new List<Direction>();
 
                     foreach (var direction in lastAvailableDirections)
@@ -134,7 +136,7 @@
                     }
                     else
                     {
-                        // Если всё равно не нашли, продолжаем искать среди всех доступных направлений
+                        // Если ничего не нашли, продолжаем искать среди всех доступных направлений
                         availableDirections.AddRange(GetAvailableDirections());
                         if (availableDirections.Count > 0)
                         {
@@ -196,16 +198,16 @@
                     break;
             }
 
-            // Проверка, чтобы оставаться в пределах консоли
+            // Передвигаем маркер на позиции
             if (row >= 0 && row < maze.GetLength(0) && column >= 0 && column < maze.GetLength(1))
             {
                 Console.SetCursorPosition(column * 3 + 1, row * 3 + 1);
                 Console.Write("*");
+                moveCount++; // Увеличиваем счетчик движений
             }
             else
             {
-                // Если выход за границы, можно добавить логику для возврата назад или игнорирования
-                // Например: row и column нельзя менять при выходе за границы
+                // Если выход за границы, игнорируем движение
                 switch (direction)
                 {
                     case Direction.Up: row++; break;
@@ -247,6 +249,7 @@
             {
                 Console.SetCursorPosition(0, maze.GetLength(0) * 3);
                 Console.WriteLine("ИИ достиг точки конца. Игра окончена.");
+                Console.WriteLine($"Количество совершённых ходов: {moveCount}"); // Выводим количество ходов
                 Environment.Exit(0);
             }
         }

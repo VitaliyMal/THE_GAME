@@ -1,6 +1,6 @@
-﻿//namespace The_Maze
+﻿using System.Collections.Generic;
 
-// НЕ РАБОТАЕТ - РАЗОБРАТЬСЯ
+namespace The_Maze
 {
     public class BFS
     {
@@ -15,101 +15,47 @@
             _columns = maze.GetLength(1);
         }
 
-        public (List<(int, int)> path, int steps) FindShortestPath((int startRow, int startCol) start, (int endRow, int endCol) end)
+        public (List<(int, int)> path, int steps) FindShortestPath((int, int) start, (int, int) end)
         {
-            if (_maze[start.startRow, start.startCol].HasFlag(Maze.Tile.Null) ||
-                _maze[end.endRow, end.endCol].HasFlag(Maze.Tile.Null))
-            {
-                return (new List<(int, int)>(), -1); // Start or End point is blocked
-            }
+            var queue = new Queue<((int, int) position, List<(int, int)> path)>();
+            var visited = new HashSet<(int, int)>();
 
-            var queue = new Queue<Node>();
-            var visited = new bool[_rows, _columns];
-            var parent = new (int, int)[_rows, _columns];
-            var directions = new (int dRow, int dCol)[]
-            {
-                (1, 0), // Down
-                (-1, 0), // Up
-                (0, 1), // Right
-                (0, -1) // Left
-            };
-
-            queue.Enqueue(new Node(start.startRow, start.startCol));
-            visited[start.startRow, start.startCol] = true;
+            queue.Enqueue((start, new List<(int, int)> { start }));
+            visited.Add(start);
 
             while (queue.Count > 0)
             {
                 var current = queue.Dequeue();
+                var currentPosition = current.position;
+                var currentPath = current.path;
 
-                // Check if reached the end
-                if (current.Row == end.endRow && current.Column == end.endCol)
+                if (currentPosition == end)
                 {
-                    var path = BuildPath(parent, start, end);
-                    return (path, path.Count - 1); // Return path and step count (steps = edges = path.Count - 1)
+                    return (currentPath, currentPath.Count - 1);
                 }
 
-                foreach (var (dRow, dCol) in directions)
+                foreach (var neighbor in GetNeighbors(currentPosition))
                 {
-                    int newRow = current.Row + dRow;
-                    int newCol = current.Column + dCol;
-
-                    if (IsValidMove(newRow, newCol, visited))
+                    if (!visited.Contains(neighbor))
                     {
-                        visited[newRow, newCol] = true;
-                        parent[newRow, newCol] = (current.Row, current.Column);
-                        queue.Enqueue(new Node(newRow, newCol));
+                        visited.Add(neighbor);
+                        var newPath = new List<(int, int)>(currentPath) { neighbor };
+                        queue.Enqueue((neighbor, newPath));
                     }
                 }
             }
 
-            return (new List<(int, int)>(), -1); // No path found, return empty path and -1 as steps
+            return (null, -1); // No path found
         }
 
-        private bool IsValidMove(int row, int col, bool[,] visited)
+        private IEnumerable<(int, int)> GetNeighbors((int row, int column) position)
         {
-            // Check if within bounds, not visited, and not a wall
-            return row >= 0 && row < _rows && col >= 0 && col < _columns &&
-                   !_maze[row, col].HasFlag(Maze.Tile.Null) && !visited[row, col];
-        }
+            var (row, column) = position;
 
-        private List<(int, int)> BuildPath((int, int)[,] parent, (int startRow, int startCol) start, (int endRow, int endCol) end)
-        {
-            var path = new List<(int, int)>();
-            var (row, col) = end;
-
-            // Build path by backtracking from end to start
-            while (row != start.startRow || col != start.startCol)
-            {
-                path.Add((row, col));
-                (row, col) = parent[row, col];
-            }
-            path.Add((start.startRow, start.startCol));
-            path.Reverse(); // Reverse to get path from start to end
-
-            return path;
-        }
-
-        private class Node
-        {
-            public int Row { get; }
-            public int Column { get; }
-
-            public Node(int row, int column)
-            {
-                Row = row;
-                Column = column;
-            }
+            if (row > 0 && _maze[row, column].HasFlag(Maze.Tile.Up)) yield return (row - 1, column); // Up
+            if (row < _rows - 1 && _maze[row, column].HasFlag(Maze.Tile.Down)) yield return (row + 1, column); // Down
+            if (column > 0 && _maze[row, column].HasFlag(Maze.Tile.Left)) yield return (row, column - 1); // Left
+            if (column < _columns - 1 && _maze[row, column].HasFlag(Maze.Tile.Right)) yield return (row, column + 1); // Right
         }
     }
 }
-
-
-
-
-//Возврат кортежа: Метод FindShortestPath возвращает кортеж, состоящий из списка координат пути и целочисленного значения, представляющего количество шагов.
-
-//Количество шагов: После построения пути с помощью метода BuildPath, мы возвращаем количество шагов, используя path.Count - 1, так как количество шагов равно количеству рёбер на пути.
-
-//Возврат значения при отсутствии пути: Если путь не найден, метод возвращает пустой список и -1 в качестве числа шагов, чтобы указать, что путь отсутствует.
-
-//Вызывая метод FindShortestPath, получаем путь и количество шагов, что будет полезно для дальнейшего анализа. 
