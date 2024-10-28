@@ -82,38 +82,38 @@ namespace The_Maze
             };
 
             ai.Move(); // Запуск поведения ИИ
-            int row = 0;
-            int column = 0;
-            while (row != rows - 1 || column != columns - 1)
-            {
-                Console.SetCursorPosition(column * 3 + 1, row * 3 + 1);
-                switch (Console.ReadKey().Key)
-                {
-                    // Управление доступными клавишами
-                    case ConsoleKey.UpArrow:
-                        if (maze[row, column].HasFlag(Maze.Tile.Up))
-                            row--;
-                        break;
-                    case ConsoleKey.DownArrow:
-                        if (maze[row, column].HasFlag(Maze.Tile.Down))
-                            row++;
-                        break;
-                    case ConsoleKey.LeftArrow:
-                        if (maze[row, column].HasFlag(Maze.Tile.Left))
-                            column--;
-                        break;
-                    case ConsoleKey.RightArrow:
-                        if (maze[row, column].HasFlag(Maze.Tile.Right))
-                            column++;
-                        break;
-                    case ConsoleKey.Escape:
-                        Console.Clear();
-                        Console.Write("Maze was closed.");
-                        return;
-                }
-            }
-            Console.Clear();
-            Console.Write("You Win.");
+            //int row = 0;
+            //int column = 0;
+            //while (row != rows - 1 || column != columns - 1)
+            //{
+            //    Console.SetCursorPosition(column * 3 + 1, row * 3 + 1);
+            //    switch (Console.ReadKey().Key)
+            //    {
+            //        // Управление доступными клавишами
+            //        case ConsoleKey.UpArrow:
+            //            if (maze[row, column].HasFlag(Maze.Tile.Up))
+            //                row--;
+            //            break;
+            //        case ConsoleKey.DownArrow:
+            //            if (maze[row, column].HasFlag(Maze.Tile.Down))
+            //                row++;
+            //            break;
+            //        case ConsoleKey.LeftArrow:
+            //            if (maze[row, column].HasFlag(Maze.Tile.Left))
+            //                column--;
+            //            break;
+            //        case ConsoleKey.RightArrow:
+            //            if (maze[row, column].HasFlag(Maze.Tile.Right))
+            //                column++;
+            //            break;
+            //        case ConsoleKey.Escape:
+            //            Console.Clear();
+            //            Console.Write("Maze was closed.");
+            //            return;
+            //    }
+            //}
+            //Console.Clear();
+            //Console.Write("You Win.");
 #endif
         }
     }

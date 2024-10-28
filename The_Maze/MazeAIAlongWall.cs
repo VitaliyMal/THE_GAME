@@ -12,12 +12,13 @@ using The_Maze;
 
 namespace The_Maze
 {
-    public class MazeAIRightWall
+    public class MazeAIAlongWall
     {
         private int row;
         private int column;
         private readonly Maze.Tile[,] maze;
         private int currentDirection;
+        private int moveCount; // Счетчик количества ходов
 
         // Directions represented as (row change, column change)
         private static readonly (int, int)[] Directions =
@@ -28,12 +29,13 @@ namespace The_Maze
             (-1, 0)   // Up
         };
 
-        public MazeAIRightWall(Maze.Tile[,] maze)
+        public MazeAIAlongWall(Maze.Tile[,] maze)
         {
             this.maze = maze;
-            this.row = 0; // Starting at top-left corner
-            this.column = 0; // Starting at top-left corner
-            this.currentDirection = 0; // Start facing right
+            this.row = 0; // Начало в верхнем левом углу
+            this.column = 0; // Начало в верхнем левом углу
+            this.currentDirection = 0; // Начало направлено вправо
+            moveCount = 0; // Инициализация счетчика
         }
 
         public void Navigate()
@@ -47,42 +49,43 @@ namespace The_Maze
                 if (cursorLeft >= 0 && cursorLeft < Console.WindowWidth && cursorTop >= 0 && cursorTop < Console.WindowHeight)
                 {
                     Console.SetCursorPosition(cursorLeft, cursorTop);
+                    Console.Write("*");
+                    moveCount++; // Увеличиваем счетчик движений
                     MoveAlongWall();
-                    Thread.Sleep(150);
+                    Thread.Sleep(50);
                 }
             }
             Console.Clear();
-            Console.WriteLine("AI reached the end!");
+            Console.WriteLine("ИИ достиг точки конца. Игра окончена.");
+            Console.WriteLine($"Количество совершённых ходов: {moveCount}"); // Выводим количество ходов
         }
 
         private void MoveAlongWall()
         {
-            // Attempt to turn right first
-            int nextDirection = (currentDirection + 1) % 4; // Right turn
+            // Поворачиваем налево сначала
+            int nextDirection = (currentDirection + 3) % 4; // Поворот налево
+            //int currentDirection = (currentDirection + 1) % 4; // Поворот направо
             if (CanMoveTo(nextDirection))
             {
-                currentDirection = nextDirection; // Update direction to the one turned to
+                currentDirection = nextDirection; // Обновляем направление
             }
-            else if (CanMoveTo(currentDirection)) // If can move in the current direction
+            else if (CanMoveTo(currentDirection)) // Если можем двигаться в текущем направлении
             {
-                // Do nothing, just move
+                // Ничего не делаем, просто движемся
             }
-            else // If can't move in both directions
+            else // Если не можем двигаться ни в одном направлении
             {
-                // If hitting a wall, backtrack by turning left
-                currentDirection = (currentDirection + 3) % 4; // Turn left (or backtrack)
-                // As we cannot move, we need to attempt to move in the new direction
-                if (CanMoveTo(currentDirection))
+                // Если упираемся в стену, поворачиваем направо
+                currentDirection = (currentDirection + 1) % 4; // Поворот направо
+                //currentDirection = (currentDirection + 3) % 4; // Поворот налево
+                // Проверяем, можем ли мы двигаться в новом направлении
+                if (!CanMoveTo(currentDirection))
                 {
-                    // Move in the new direction
-                }
-                else
-                {
-                    // If we still can't move, we need to continue backtracking until we find a new path
+                    // Если мы все равно не можем двигаться, нужно попытаться вернуться обратно
                     Backtrack();
                 }
             }
-            // Move in the current direction
+            // Двинуться в текущее направление
             MoveInCurrentDirection();
         }
 
@@ -118,13 +121,14 @@ namespace The_Maze
 
         private void Backtrack()
         {
-            // Move backward in the opposite direction
-            currentDirection = (currentDirection + 2) % 4; // Turn around
+            // Двигаемся назад в противоположном направлении
+            currentDirection = (currentDirection + 2) % 4; // Поворачиваем на 180 градусов
             row += Directions[currentDirection].Item1;
             column += Directions[currentDirection].Item2;
-            // Attempt the new direction after turning around
-            currentDirection = (currentDirection + 2) % 4; // Turn back to original
+            // Попробуем вернуться в исходное направление
+            currentDirection = (currentDirection + 2) % 4; // Поворачиваем обратно к оригиналу
         }
     }
 }
+
 
