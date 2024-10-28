@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-
-namespace The_Maze
+﻿namespace The_Maze
 {
     public class AI
     {
@@ -11,6 +7,7 @@ namespace The_Maze
         private int column;
         private readonly HashSet<(int, int)> visitedLocations; // Хранит все посещённые клетки
         private readonly Stack<(int row, int column, List<Direction> availableDirections)> pathStack;
+        private int moveCount; // Счетчик количества ходов
 
         public enum Strategy
         {
@@ -32,13 +29,14 @@ namespace The_Maze
         public AI(Maze.Tile[,] maze, int startRow, int startColumn, Strategy strategy)
         {
             this.maze = maze;
-            this.row = startRow;
-            this.column = startColumn;
+            row = startRow;
+            column = startColumn;
             this.strategy = strategy;
             visitedLocations = new HashSet<(int, int)>();
             pathStack = new Stack<(int, int, List<Direction>)>();
             visitedLocations.Add((row, column)); // Добавляем начальную позицию в посещённые
             pathStack.Push((row, column, GetAvailableDirections()));
+            moveCount = 0; // Инициализация счетчика
         }
 
         public void Move()
@@ -110,22 +108,64 @@ namespace The_Maze
                 visitedLocations.Add((row, column)); // Добавляем текущую позицию в посещённые
                 pathStack.Push((row, column, GetAvailableDirections())); // Запоминаем путь
             }
-            else if (pathStack.Count > 0)
+            else
             {
-                // Возврат к последней развилке
-                (row, column, List<Direction> lastAvailableDirections) = pathStack.Pop();
-                // Если есть не посещенные направления, выбираем одно из них
-                List<Direction> lastUnvisitedDirections = lastAvailableDirections.FindAll(d =>
+                // Если нет доступных непосещённых направлений, возвращаемся к предыдущему шагу
+                if (pathStack.Count > 0)
                 {
-                    var (nextRow, nextColumn) = GetNextPosition(d);
-                    return !visitedLocations.Contains((nextRow, nextColumn));
-                });
+                    (row, column, List<Direction> lastAvailableDirections) = pathStack.Pop();
 
-                if (lastUnvisitedDirections.Count > 0)
+                    // Получаем непосещённые направления снова
+                    List<Direction> lastUnvisitedDirections = new List<Direction>();
+
+                    foreach (var direction in lastAvailableDirections)
+                    {
+                        var (nextRow, nextColumn) = GetNextPosition(direction);
+                        if (!visitedLocations.Contains((nextRow, nextColumn)))
+                        {
+                            lastUnvisitedDirections.Add(direction);
+                        }
+                    }
+
+                    // Если есть непосещённые направления, выбираем одно из них
+                    if (lastUnvisitedDirections.Count > 0)
+                    {
+                        Random rnd = new Random();
+                        Direction direction = lastUnvisitedDirections[rnd.Next(lastUnvisitedDirections.Count)];
+                        Move(direction);
+                    }
+                    else
+                    {
+                        // Если ничего не нашли, продолжаем искать среди всех доступных направлений
+                        availableDirections.AddRange(GetAvailableDirections());
+                        if (availableDirections.Count > 0)
+                        {
+                            Random rnd = new Random();
+                            Direction direction = availableDirections[rnd.Next(availableDirections.Count)];
+                            Move(direction);
+                        }
+                        else
+                        {
+                            Console.WriteLine("Стек пуст - не знаю куда идти!"); // Такого не должно быть, но на всякий случай
+                            Thread.Sleep(50);
+                        }
+                    }
+                }
+                else
                 {
-                    Random rnd = new Random();
-                    Direction direction = lastUnvisitedDirections[rnd.Next(lastUnvisitedDirections.Count)];
-                    Move(direction);
+                    // Если стек пуст, ищем любые доступные направления
+                    List<Direction> directions = GetAvailableDirections();
+                    if (directions.Count > 0)
+                    {
+                        Random rnd = new Random();
+                        Direction direction = directions[rnd.Next(directions.Count)];
+                        Move(direction);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Стек пуст - не знаю куда идти!");
+                        Thread.Sleep(50);
+                    }
                 }
             }
         }
@@ -157,8 +197,25 @@ namespace The_Maze
                     column++;
                     break;
             }
-            Console.SetCursorPosition(column * 3 + 1, row * 3 + 1);
-            Console.Write("*");
+
+            // Передвигаем маркер на позиции
+            if (row >= 0 && row < maze.GetLength(0) && column >= 0 && column < maze.GetLength(1))
+            {
+                Console.SetCursorPosition(column * 3 + 1, row * 3 + 1);
+                Console.Write("*");
+                moveCount++; // Увеличиваем счетчик движений
+            }
+            else
+            {
+                // Если выход за границы, игнорируем движение
+                switch (direction)
+                {
+                    case Direction.Up: row++; break;
+                    case Direction.Down: row--; break;
+                    case Direction.Left: column++; break;
+                    case Direction.Right: column--; break;
+                }
+            }
         }
 
         private bool CanMove(Direction direction)
@@ -192,6 +249,7 @@ namespace The_Maze
             {
                 Console.SetCursorPosition(0, maze.GetLength(0) * 3);
                 Console.WriteLine("ИИ достиг точки конца. Игра окончена.");
+                Console.WriteLine($"Количество совершённых ходов: {moveCount}"); // Выводим количество ходов
                 Environment.Exit(0);
             }
         }
