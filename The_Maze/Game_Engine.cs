@@ -10,20 +10,23 @@ namespace The_Maze
 {
     public class Game_Engine
     {
-
-
+                
         static void Main()
         {
             if (OperatingSystem.IsWindows())
             {
                 Console.WindowHeight = 32;
             }
+            bool end = false;
             const int rows = 8;
             const int columns = 20;
 
-            static Maze.Tile[,] GenerateMaze() =>
+            while (end = true)
+            {
+
+                static Maze.Tile[,] GenerateMaze() =>
 #if UsePrims
-        Maze.GeneratePrims(rows, columns);
+            Maze.GeneratePrims(rows, columns);
 #else
                 Maze.Generate(rows, columns);
 #endif
@@ -38,83 +41,92 @@ namespace The_Maze
         Console.ReadLine();
     }
 #else
-            Console.CursorVisible = true;
-            Maze.Tile[,] maze = GenerateMaze();
+                Console.CursorVisible = true;
+                Maze.Tile[,] maze = GenerateMaze();
 
-            Console.Clear();
-            Console.WriteLine(Maze.Render(maze));
-            Console.WriteLine();
-            Console.WriteLine("Maze");
-            Console.WriteLine("Solve the maze by using the arrow keys.");
-            Console.WriteLine("Press escape to quit.");
+                Console.Clear();
+                Console.WriteLine(Maze.Render(maze));
+                Console.WriteLine();
+                Console.WriteLine("Maze");
+                Console.WriteLine("Solve the maze by using the arrow keys.");
+                Console.WriteLine("Press escape to quit.");
 
-            // Вызов BFS и получение количества шагов до конечной точки
-            BFS bfs = new BFS(maze);
-            var (path, steps) = bfs.FindShortestPath((0, 0), (rows - 1, columns - 1));
+                // Вызов BFS и получение количества шагов до конечной точки
+                BFS bfs = new BFS(maze);
+                var (path, steps) = bfs.FindShortestPath((0, 0), (rows - 1, columns - 1));
 
-            if (steps != -1)
-            {
-                Console.WriteLine($"Кратчайшее количество ходов до конечной точки: {steps}");
-            }
-            else
-            {
-                Console.WriteLine("Нет доступного пути до конечной точки.");
-            }
+                if (steps != -1)
+                {
+                    Console.WriteLine($"Кратчайшее количество ходов до конечной точки: {steps}");
+                }
+                else
+                {
+                    Console.WriteLine("Нет доступного пути до конечной точки.");
+                }
 
-            // Выбор стратегии ИИ
-            Console.WriteLine("Выберите стратегию для ИИ:");
-            Console.WriteLine("1. Двигаться вдоль правой стенки");
-            Console.WriteLine("2. Двигаться вдоль левой стенки");
-            Console.WriteLine("3. Умный выбор на развилках");
+                // Выбор стратегии ИИ
+                Console.WriteLine("Выберите стратегию для ИИ:");
+                Console.WriteLine("1. Двигаться вдоль правой стенки");
+                Console.WriteLine("2. Двигаться вдоль левой стенки");
+                Console.WriteLine("3. Умный выбор на развилках");
 
-            int choice;
-            while (!int.TryParse(Console.ReadLine(), out choice) || choice < 1 || choice > 3)
-            {
-                Console.WriteLine("Неверный выбор, попробуйте еще раз.");
-            }
+                int choice = 0;
+                while (!int.TryParse(Console.ReadLine(), out choice) || choice < 1 || choice > 3)
+                {
+                    Console.WriteLine("Неверный выбор, попробуйте еще раз.");
+                }
 
-            AI ai = choice switch
-            {
-                1 => new AI(maze, 0, 0, AI.Strategy.FollowRightWall),
-                2 => new AI(maze, 0, 0, AI.Strategy.FollowLeftWall),
-                3 => new AI(maze, 0, 0, AI.Strategy.RandomSituation),
-                _ => throw new InvalidOperationException("Неправильный выбор стратегии")
-            };
+                AI ai = choice switch
+                {
+                    1 => new AI(maze, 0, 0, AI.Strategy.FollowRightWall, steps, end),
+                    2 => new AI(maze, 0, 0, AI.Strategy.FollowLeftWall, steps, end),
+                    3 => new AI(maze, 0, 0, AI.Strategy.RandomSituation, steps, end),
+                    _ => throw new InvalidOperationException("Неправильный выбор стратегии")
+                };
 
-            ai.Move(); // Запуск поведения ИИ
-            //int row = 0;
-            //int column = 0;
-            //while (row != rows - 1 || column != columns - 1)
-            //{
-            //    Console.SetCursorPosition(column * 3 + 1, row * 3 + 1);
-            //    switch (Console.ReadKey().Key)
-            //    {
-            //        // Управление доступными клавишами
-            //        case ConsoleKey.UpArrow:
-            //            if (maze[row, column].HasFlag(Maze.Tile.Up))
-            //                row--;
-            //            break;
-            //        case ConsoleKey.DownArrow:
-            //            if (maze[row, column].HasFlag(Maze.Tile.Down))
-            //                row++;
-            //            break;
-            //        case ConsoleKey.LeftArrow:
-            //            if (maze[row, column].HasFlag(Maze.Tile.Left))
-            //                column--;
-            //            break;
-            //        case ConsoleKey.RightArrow:
-            //            if (maze[row, column].HasFlag(Maze.Tile.Right))
-            //                column++;
-            //            break;
-            //        case ConsoleKey.Escape:
-            //            Console.Clear();
-            //            Console.Write("Maze was closed.");
-            //            return;
-            //    }
-            //}
-            //Console.Clear();
-            //Console.Write("You Win.");
+                ai.Move(); // Запуск поведения ИИ
+                //Console.Clear();
+                //Console.WriteLine($"Кратчайшее количество ходов до конечной точки: {ai.steps}");
+                //Console.WriteLine("ИИ достиг точки конца. Игра окончена.");
+                //Console.WriteLine($"Количество совершённых ходов: {ai.moveCount}"); // Выводим количество ходов
+                //Console.WriteLine($"Выбран режим ИИ №{choice}");
+                //Environment.Exit(0);
+
+
+                //int row = 0;
+                //int column = 0;
+                //while (row != rows - 1 || column != columns - 1)
+                //{
+                //    Console.SetCursorPosition(column * 3 + 1, row * 3 + 1);
+                //    switch (Console.ReadKey().Key)
+                //    {
+                //        // Управление доступными клавишами
+                //        case ConsoleKey.UpArrow:
+                //            if (maze[row, column].HasFlag(Maze.Tile.Up))
+                //                row--;
+                //            break;
+                //        case ConsoleKey.DownArrow:
+                //            if (maze[row, column].HasFlag(Maze.Tile.Down))
+                //                row++;
+                //            break;
+                //        case ConsoleKey.LeftArrow:
+                //            if (maze[row, column].HasFlag(Maze.Tile.Left))
+                //                column--;
+                //            break;
+                //        case ConsoleKey.RightArrow:
+                //            if (maze[row, column].HasFlag(Maze.Tile.Right))
+                //                column++;
+                //            break;
+                //        case ConsoleKey.Escape:
+                //            Console.Clear();
+                //            Console.Write("Maze was closed.");
+                //            return;
+                //    }
+                //}
+                //Console.Clear();
+                //Console.Write("You Win.");
 #endif
+            }
         }
     }
 
