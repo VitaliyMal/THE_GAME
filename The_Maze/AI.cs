@@ -11,6 +11,7 @@
         public int steps; // кратчайший путь к выходу
         private bool reachedEnd; // Флаг достижения конца лабиринта
         public bool end;
+        string filePath = "statistic.txt";
 
         private int currentDirection;
 
@@ -68,7 +69,7 @@
             {
                 Navigate(Strategy.FollowRightWall);
             }
-            if (end)
+            if (end=false)
             {
                 //Console.Clear();
                 //Console.WriteLine("Игра прервана.");
@@ -82,7 +83,7 @@
             {
                 Navigate(Strategy.FollowLeftWall);
             }
-            if (end)
+            if (end=false)
             {
                 //Console.Clear();
                 //Console.WriteLine("Игра прервана.");
@@ -96,7 +97,7 @@
             {
                 CheckVictoryCondition(); // Проверка на победу
                 MoveBasedOnStrategy();
-                Thread.Sleep(50);
+                //Thread.Sleep(50);
                 // Проверка прерывания по Escape
                 if (Console.KeyAvailable && Console.ReadKey(true).Key == ConsoleKey.Escape)
                 {
@@ -172,7 +173,7 @@
                         else
                         {
                             Console.WriteLine("Стек пуст - не знаю куда идти!"); // Такого не должно быть, но на всякий случай
-                            Thread.Sleep(50);
+                            //Thread.Sleep(50);
                         }
                     }
                 }
@@ -189,7 +190,7 @@
                     else
                     {
                         Console.WriteLine("Стек пуст - не знаю куда идти!");
-                        Thread.Sleep(50);
+                        //Thread.Sleep(50);
                     }
                 }
             }
@@ -226,8 +227,8 @@
             // Передвигаем маркер на позиции
             if (row >= 0 && row < maze.GetLength(0) && column >= 0 && column < maze.GetLength(1))
             {
-                Console.SetCursorPosition(column * 3 + 1, row * 3 + 1);
-                Console.Write("*");
+               // Console.SetCursorPosition(column * 3 + 1, row * 3 + 1);
+               // Console.Write("*");
                 moveCount++; // Увеличиваем счетчик движений
             }
             else
@@ -273,12 +274,18 @@
             if (row == maze.GetLength(0) - 1 && column == maze.GetLength(1) - 1)
             {
                 reachedEnd = true; // Устанавливаем флаг достижения конца
-                Console.SetCursorPosition(0, (maze.GetLength(0) * 3)+12);
-                //Console.Clear();
-                Console.WriteLine($"Кратчайшее количество ходов до конечной точки: {steps}");
-                Console.WriteLine("ИИ достиг точки конца. Игра окончена.");
-                Console.WriteLine($"Количество совершённых ходов: {moveCount}"); // Выводим количество ходов
-                //Environment.Exit(0);
+                using (StreamWriter writer = new StreamWriter(filePath,true))
+                {
+                    // Объединяем значения в строку с разделителем
+                    string line = String.Join(",",strategy,steps ,moveCount); // записываем статистику в файл
+                    writer.WriteLine(line);
+                }
+                //Console.SetCursorPosition(0, (maze.GetLength(0) * 3)+12);
+                ////Console.Clear();
+                //Console.WriteLine($"Кратчайшее количество ходов до конечной точки: {steps}");
+                //Console.WriteLine("ИИ достиг точки конца. Игра окончена.");
+                //Console.WriteLine($"Количество совершённых ходов: {moveCount}"); // Выводим количество ходов
+                ////Environment.Exit(0);
             }
         }
 
@@ -306,11 +313,11 @@
 
                 if (cursorLeft >= 0 && cursorLeft < Console.WindowWidth && cursorTop >= 0 && cursorTop < Console.WindowHeight)
                 {
-                    Console.SetCursorPosition(cursorLeft, cursorTop);
-                    Console.Write("*");
+                    //Console.SetCursorPosition(cursorLeft, cursorTop);
+                    //Console.Write("*");
                     moveCount++; // Увеличиваем счетчик движений
                     MoveAlongWall(strategy);
-                    Thread.Sleep(50);
+                    //Thread.Sleep(50);
                     if (Console.KeyAvailable && Console.ReadKey(true).Key == ConsoleKey.Escape)
                     {
                         reachedEnd = true;
@@ -320,8 +327,8 @@
                         return;  // Выход из метода
                     }
                 }
-            }
             CheckVictoryCondition();
+            }
         }
 
         private void MoveAlongWall(Strategy strategy)

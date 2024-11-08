@@ -1,6 +1,7 @@
 ﻿//#define MazeGenertorLoop // uncomment to run the generator in a loop
 //#define DebugRandomMazeGeneration // uncomment me to watch the maze being built node-by-node
 #define UsePrims // uncomment me to use an alternate algorithm for maze generation
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using Towel.DataStructures;
 
@@ -17,14 +18,114 @@ namespace The_Maze
             {
                 Console.WindowHeight = 32;
             }
+
+
+
+            
             bool end = false;
             const int rows = 8;
             const int columns = 20;
+            int totalSteps = 0;
+            int totalShortWaySteps = 0;
+            int length = 1000;
+            string filePath = "statistic.txt";
 
             while (end = true)
             {
+                int choice = 0;
 
-                static Maze.Tile[,] GenerateMaze() =>
+                // Выбор стратегии ИИ
+                Console.WriteLine();
+                Console.WriteLine("Выберите стратегию для ИИ:");
+                Console.WriteLine("1. Двигаться вдоль правой стенки");
+                Console.WriteLine("2. Двигаться вдоль левой стенки");
+                Console.WriteLine("3. Умный выбор на развилках");
+                Console.WriteLine("4. Показать статистику");
+                Console.WriteLine();
+
+                while (!int.TryParse(Console.ReadLine(), out choice) || choice < 1 || choice > 4)
+                {
+                    Console.WriteLine("Неверный выбор, попробуйте еще раз.");
+                }
+
+                if (choice == 4)
+                {
+                    if (!File.Exists(filePath))
+                    {
+                        Console.WriteLine("Файл не найден.");
+                        return;
+                    }
+
+                    Statistic FollowRightWall = new Statistic(length);
+                    Statistic FollowLeftWall = new Statistic(length);
+                    Statistic RandomSituation = new Statistic(length);
+
+                    Console.WriteLine();
+                    Console.WriteLine("Статистика!!!!");
+                    using (StreamReader reader = new StreamReader(filePath))
+                    {
+                        string line;
+                        while ((line = reader.ReadLine()) != null)
+                        {
+                            // Разделяем строку по запятой
+                            var parts = line.Split(',');
+
+                            // Проверяем, содержит ли строка ожидаемое количество элементов
+                            if (parts.Length == 3)
+                            {
+                                // Преобразуем значения в целые числа
+                                if (int.TryParse(parts[1], out int steps) && int.TryParse(parts[2], out int shortWaySteps))
+                                {
+                                    if (parts[0] == "FollowRightWall")
+                                    {
+                                        FollowRightWall.totalSteps += steps;
+                                        FollowRightWall.totalShortWaySteps += shortWaySteps;
+                                    }
+                                    else if (parts[0] == "FollowLeftWall")
+                                    {
+                                        FollowLeftWall.totalSteps += steps;
+                                        FollowLeftWall.totalShortWaySteps += shortWaySteps;
+                                    }
+                                    else if (parts[0] == "RandomSituation")
+                                    {
+                                        RandomSituation.totalSteps += steps;
+                                        RandomSituation.totalShortWaySteps += shortWaySteps;
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("Ошибка в чтении типа стратегии!!!");
+                                    }
+
+                                    totalSteps += steps;
+                                    totalShortWaySteps += shortWaySteps;
+                                }
+                                else
+                                {
+                                    Console.WriteLine($"Ошибка преобразования строки: {line}");
+                                }
+                            }
+
+                        }
+
+                    }
+                    FollowRightWall.avg();
+                    FollowLeftWall.avg();
+                    RandomSituation.avg();
+                    Console.WriteLine($"FollowRightWall avgSteps {FollowRightWall.avgSteps}, avg Shortest way {FollowRightWall.avgShortWaySteps}");
+                    Console.WriteLine($"FollowLeftWall avgSteps {FollowLeftWall.avgSteps}, avg Shortest way {FollowLeftWall.avgShortWaySteps}");
+                    Console.WriteLine($"RandomSituation avgSteps {RandomSituation.avgSteps}, avg Shortest way {RandomSituation.avgShortWaySteps}");
+                    Console.WriteLine();
+                    continue;
+                }
+                
+                for (int i = 0; i <= length; i++)
+                {
+                    
+                    if(i%100==0)
+                    Console.WriteLine($"Game {i}");
+                    
+                    
+                    static Maze.Tile[,] GenerateMaze() =>
 #if UsePrims
             Maze.GeneratePrims(rows, columns);
 #else
@@ -43,38 +144,39 @@ namespace The_Maze
 #else
                 Console.CursorVisible = true;
                 Maze.Tile[,] maze = GenerateMaze();
-
-                Console.Clear();
-                Console.WriteLine(Maze.Render(maze));
-                Console.WriteLine();
-                Console.WriteLine("Maze");
-                Console.WriteLine("Solve the maze by using the arrow keys.");
-                Console.WriteLine("Press escape to quit.");
+                /// Отрисовка лабиринта
+                //Console.Clear();
+                //Console.WriteLine(Maze.Render(maze));
+                //Console.WriteLine();
+                //Console.WriteLine("Maze");
+                //Console.WriteLine("Solve the maze by using the arrow keys.");
+                //Console.WriteLine("Press escape to quit.");
 
                 // Вызов BFS и получение количества шагов до конечной точки
                 BFS bfs = new BFS(maze);
                 var (path, steps) = bfs.FindShortestPath((0, 0), (rows - 1, columns - 1));
 
-                if (steps != -1)
-                {
-                    Console.WriteLine($"Кратчайшее количество ходов до конечной точки: {steps}");
-                }
-                else
-                {
-                    Console.WriteLine("Нет доступного пути до конечной точки.");
-                }
+                //if (steps != -1)
+                //{
+                //    Console.WriteLine($"Кратчайшее количество ходов до конечной точки: {steps}");
+                //}
+                //else
+                //{
+                //    Console.WriteLine("Нет доступного пути до конечной точки.");
+                //}
 
-                // Выбор стратегии ИИ
-                Console.WriteLine("Выберите стратегию для ИИ:");
-                Console.WriteLine("1. Двигаться вдоль правой стенки");
-                Console.WriteLine("2. Двигаться вдоль левой стенки");
-                Console.WriteLine("3. Умный выбор на развилках");
+                //// Выбор стратегии ИИ
+                //Console.WriteLine("Выберите стратегию для ИИ:");
+                //Console.WriteLine("1. Двигаться вдоль правой стенки");
+                //Console.WriteLine("2. Двигаться вдоль левой стенки");
+                //Console.WriteLine("3. Умный выбор на развилках");
 
-                int choice = 0;
-                while (!int.TryParse(Console.ReadLine(), out choice) || choice < 1 || choice > 3)
-                {
-                    Console.WriteLine("Неверный выбор, попробуйте еще раз.");
-                }
+                //int choice = 0;
+                //while (!int.TryParse(Console.ReadLine(), out choice) || choice < 1 || choice > 3)
+                //{
+                //    Console.WriteLine("Неверный выбор, попробуйте еще раз.");
+                //}
+
 
                 AI ai = choice switch
                 {
@@ -85,46 +187,53 @@ namespace The_Maze
                 };
 
                 ai.Move(); // Запуск поведения ИИ
-                //Console.Clear();
-                //Console.WriteLine($"Кратчайшее количество ходов до конечной точки: {ai.steps}");
-                //Console.WriteLine("ИИ достиг точки конца. Игра окончена.");
-                //Console.WriteLine($"Количество совершённых ходов: {ai.moveCount}"); // Выводим количество ходов
-                //Console.WriteLine($"Выбран режим ИИ №{choice}");
-                //Environment.Exit(0);
+                           //Console.Clear();
+                           //Console.WriteLine($"Кратчайшее количество ходов до конечной точки: {ai.steps}");
+                           //Console.WriteLine("ИИ достиг точки конца. Игра окончена.");
+                           //Console.WriteLine($"Количество совершённых ходов: {ai.moveCount}"); // Выводим количество ходов
+                           //Console.WriteLine($"Выбран режим ИИ №{choice}");
+                           //Environment.Exit(0);
 
 
-                //int row = 0;
-                //int column = 0;
-                //while (row != rows - 1 || column != columns - 1)
-                //{
-                //    Console.SetCursorPosition(column * 3 + 1, row * 3 + 1);
-                //    switch (Console.ReadKey().Key)
-                //    {
-                //        // Управление доступными клавишами
-                //        case ConsoleKey.UpArrow:
-                //            if (maze[row, column].HasFlag(Maze.Tile.Up))
-                //                row--;
-                //            break;
-                //        case ConsoleKey.DownArrow:
-                //            if (maze[row, column].HasFlag(Maze.Tile.Down))
-                //                row++;
-                //            break;
-                //        case ConsoleKey.LeftArrow:
-                //            if (maze[row, column].HasFlag(Maze.Tile.Left))
-                //                column--;
-                //            break;
-                //        case ConsoleKey.RightArrow:
-                //            if (maze[row, column].HasFlag(Maze.Tile.Right))
-                //                column++;
-                //            break;
-                //        case ConsoleKey.Escape:
-                //            Console.Clear();
-                //            Console.Write("Maze was closed.");
-                //            return;
-                //    }
-                //}
-                //Console.Clear();
-                //Console.Write("You Win.");
+                    //int row = 0;
+                    //int column = 0;
+                    //while (row != rows - 1 || column != columns - 1)
+                    //{
+                    //    Console.SetCursorPosition(column * 3 + 1, row * 3 + 1);
+                    //    switch (Console.ReadKey().Key)
+                    //    {
+                    //        // Управление доступными клавишами
+                    //        case ConsoleKey.UpArrow:
+                    //            if (maze[row, column].HasFlag(Maze.Tile.Up))
+                    //                row--;
+                    //            break;
+                    //        case ConsoleKey.DownArrow:
+                    //            if (maze[row, column].HasFlag(Maze.Tile.Down))
+                    //                row++;
+                    //            break;
+                    //        case ConsoleKey.LeftArrow:
+                    //            if (maze[row, column].HasFlag(Maze.Tile.Left))
+                    //                column--;
+                    //            break;
+                    //        case ConsoleKey.RightArrow:
+                    //            if (maze[row, column].HasFlag(Maze.Tile.Right))
+                    //                column++;
+                    //            break;
+                    //        case ConsoleKey.Escape:
+                    //            Console.Clear();
+                    //            Console.Write("Maze was closed.");
+                    //            return;
+                    //    }
+                    //}
+                    //Console.Clear();
+                    //Console.Write("You Win.");
+                    if (i == length)
+                    {
+                        Console.WriteLine("Прогон завершен успешно!");
+                        Console.WriteLine();
+                    }
+
+                }
 #endif
             }
         }
